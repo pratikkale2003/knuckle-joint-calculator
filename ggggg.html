@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knuckle Joint Design</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f4f4f4;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h2>Knuckle Joint Design Calculator</h2>
+    <div class="container">
+        <label>Load (N): </label>
+        <input type="number" id="load" required><br><br>
+        
+        <label>Permissible Tensile Stress (MPa): </label>
+        <input type="number" id="sigma_t" required><br><br>
+        
+        <label>Permissible Shear Stress (MPa): </label>
+        <input type="number" id="tau" required><br><br>
+        
+        <label>Permissible Crushing Stress (MPa): </label>
+        <input type="number" id="sigma_c" required><br><br>
+        
+        <button onclick="calculateKnuckleJoint()">Submit</button>
+        
+        <div class="result" id="result">Results will be displayed here.</div>
+    </div>
+    
+    <h3>Reference Image</h3>
+    <img src="knuckle_joint_diagram.jpg" alt="Knuckle Joint Diagram" width="400px">
+    
+    <script>
+        function calculateKnuckleJoint() {
+            let load = parseFloat(document.getElementById("load").value);
+            let sigma_t = parseFloat(document.getElementById("sigma_t").value) * 1e6;
+            let tau = parseFloat(document.getElementById("tau").value) * 1e6;
+            let sigma_c = parseFloat(document.getElementById("sigma_c").value) * 1e6;
+            
+            if (isNaN(load) || isNaN(sigma_t) || isNaN(tau) || isNaN(sigma_c)) {
+                document.getElementById("result").innerHTML = "Please enter all required values correctly.";
+                return;
+            }
+            
+            let d = Math.sqrt((4 * load) / (Math.PI * sigma_t)) * 1000;
+            let dp = Math.sqrt((4 * load) / (2 * Math.PI * tau)) * 1000;
+            let tf = 1.25 * dp;
+            let wf = 2 * dp;
+            let te = tf;
+            let sigma_c_actual = load / (dp * tf * 1e-6);
+            let safety_msg = sigma_c_actual > sigma_c ? "Design is NOT safe. Increase the pin diameter." : "Design is safe.";
+            
+            document.getElementById("result").innerHTML = `
+                <p>Diameter of the rod: ${d.toFixed(2)} mm</p>
+                <p>Diameter of the pin: ${dp.toFixed(2)} mm</p>
+                <p>Thickness of fork end: ${tf.toFixed(2)} mm</p>
+                <p>Width of fork end: ${wf.toFixed(2)} mm</p>
+                <p>Thickness of eye end: ${te.toFixed(2)} mm</p>
+                <p>Actual crushing stress: ${(sigma_c_actual / 1e6).toFixed(2)} MPa</p>
+                <p>${safety_msg}</p>`;
+        }
+    </script>
+</body>
+</html>
